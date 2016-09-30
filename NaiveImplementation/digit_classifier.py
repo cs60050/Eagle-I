@@ -3,8 +3,10 @@ import numpy as np
 import theano 
 from theano import tensor as T
 from theano import function, shared, In
+from matplotlib import pyplot as plt
 import pandas as pd
 import time
+
 
 #random number generator
 rng = np.random
@@ -17,7 +19,7 @@ features = 784
 #number of output classes
 out_class = 10
 alpha = 0.01
-training_steps = 100
+training_steps = 1000
 
 #read the data
 train = pd.read_csv('./../Data/train.csv')
@@ -37,13 +39,18 @@ y = T.dvector('y')
 W = np.zeros((features, out_class)).astype(np.float64)
 B = np.zeros((1, out_class)).astype(np.float64)
 w = shared(rng.randn(features), name='w')
-b = shared(0., name='b')
+b = shared(rng.randn(), name='b')
 
 #hypothesis function is basically thus
 h = 1 / (1 + T.exp(-T.dot(x, w) - b))
 #predict true if hypothesis is greater than 0.5
 H = 1 / (1 + T.exp(-T.dot(x, W) - B))
+
+#had to change this from theano.tensor to numpy?
 pred = T.argmax(H, axis=1)
+#for i in xrange(N):
+#	pred[i] = T.argmax(H[i])
+
 
 #cost function
 J = -y * T.log(h) - (1-y) * T.log(1-h)
@@ -73,31 +80,65 @@ for i in xrange(out_class):
 	
 	#declare the weights and bias term 
   	w = shared(rng.randn(features), name='w')
-	b = shared(0., name='b')
+	#why didn't bias term update when initialised with 'zero'
+	b = shared(rng.randn(), name='b')
 
 	print '\n\nTraining the parameters for class ', i
 	print 'Iterating over entire training set\n'
 	#train the parameters for this particular class
+	cost_vec = np.zeros((N, ))
 	for j in xrange(training_steps):
 		pred, cost = train(X_train, Y_vec_train)
 		print 'Iteration: ', j+1, '\tCost: ', cost
+		cost_vec[j] = cost
 
+	#plot cost as a function of weights 
+	x_vals = [i for i in range(training_steps)]
+	y_vals = cost_vec
+	plt.plot(x_vals, y_vals, 'r')
+	plt.savefig('./cost.png')
+	plt.show()
+	
 	#store the weights of parameters for that particular class
 	print 'Done with training for class ', i
    
 	W[:, i] = w.get_value()
 	B[0, i] = b.get_value()	
-	print 'Stored the weights for class ', i
-	time.sleep(5)
+
+	#debug here...are these values stored correctly??
+	#print 'Weights are as follows: \n'
+	#print 'Unbiased weights: \n', W[:, i]
+	#print '\nBiased weight: \n', B[0, i]
+	#print 'Stored the weights for class ', i
+	time.sleep(2)
 	
 print 'Done with training the model!'
 
+#save parameters for later use 
+#ANALYSIS DONE...SAVED CORRECTLY
+np.savez('./weights.npz', w=W)
+np.savez('./bias.npz', b=B)
+print 'Saved the parameters...'
+
+#print 'Entire weight set: \n'
+#print W
+#print 'Vector of biased terms for 10 classes are: \n'
+#B
+
+
 #predict the accuracy over the training set 
 predicted = predict(X_train)
-print 'Comparing target value and predicted value for training set:\n'
-for tar, pre in zip(Y_train, predicted):
-	print 'Target: ', tar, 'Predicted: ', pre
 
+#predict seems not to be working...
+#this should be of dimension Nxout_class
+#this is probability distribution
+np.savez('./predicted.npz', pred=predicted)
+
+
+print 'Comparing target value and predicted value for training set:\n'
+#for tar, pre in zip(Y_train, predicted):
+#	print 'Target: ', tar, 'Predicted: ', pre
+#print predicted
 
 
 
