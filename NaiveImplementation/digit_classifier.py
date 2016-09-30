@@ -18,8 +18,8 @@ N = 42000
 features = 784
 #number of output classes
 out_class = 10
-alpha = 0.01
-training_steps = 1000
+alpha = 0.001
+training_steps = 10000
 
 #read the data
 train = pd.read_csv('./../Data/train.csv')
@@ -86,18 +86,18 @@ for i in xrange(out_class):
 	print '\n\nTraining the parameters for class ', i
 	print 'Iterating over entire training set\n'
 	#train the parameters for this particular class
-	cost_vec = np.zeros((N, ))
+	cost_vec = np.zeros((training_steps, ))
 	for j in xrange(training_steps):
 		pred, cost = train(X_train, Y_vec_train)
 		print 'Iteration: ', j+1, '\tCost: ', cost
 		cost_vec[j] = cost
 
 	#plot cost as a function of weights 
-	x_vals = [i for i in range(training_steps)]
+	x_vals = [idx for idx in range(training_steps)]
 	y_vals = cost_vec
 	plt.plot(x_vals, y_vals, 'r')
-	plt.savefig('./cost.png')
-	plt.show()
+	plt.savefig('./cost{:>05}.png')
+	#plt.show()
 	
 	#store the weights of parameters for that particular class
 	print 'Done with training for class ', i
@@ -139,6 +139,4 @@ print 'Comparing target value and predicted value for training set:\n'
 #for tar, pre in zip(Y_train, predicted):
 #	print 'Target: ', tar, 'Predicted: ', pre
 #print predicted
-
-
-
+print 'Done!!'
