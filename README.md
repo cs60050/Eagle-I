@@ -13,3 +13,9 @@
 <li>Rohan Khameshra</li>
 <li>Yash Goyal</li>
 </ul>
+
+<h2><b>Requirements</b> </h2>
+<li>NumPy</li>
+<li>Theano</li>
+<li>OpenCV</li>
+<li>Pandas</li>
