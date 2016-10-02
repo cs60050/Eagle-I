@@ -13,33 +13,38 @@ rng = np.random
 
 #details regarding training set
 #number of training examples
-N = 42000
+N = 5000
 #number of features
 features = 784
 #number of output classes
 out_class = 10
-alpha = 0.001
-training_steps = 10000
+#learning rate
+alpha = 0.00001
+
+training_steps = 1000
 
 #read the data
+print 'Reading data...'
 train = pd.read_csv('./../Data/train.csv')
+print 'Done with reading data...'
 
 #split data into input and output values
-X_train = train.iloc[:, 1:]
+X_train = train.iloc[0:5000, 1:]
 Y_train = train['label']
+Y_train = Y_train[0:5000]
 
 #declare variables
 # x- (1x785) and y- (1x10)
 # 'x' is matrix of 'Nxfeatures' values 
 x = T.dmatrix('x')
 # 'y' is vector of 10 values (output) corresponding to each digit
-y = T.dvector('y')
+y = T.ivector('y')
 
 #declaring weights and bias term for all the classes
-W = np.zeros((features, out_class)).astype(np.float64)
-B = np.zeros((1, out_class)).astype(np.float64)
-w = shared(rng.randn(features), name='w')
-b = shared(rng.randn(), name='b')
+W = np.zeros((features, out_class)).astype(theano.config.floatX)
+B = np.zeros((1, out_class)).astype(theano.config.floatX)
+w = shared(np.zeros((features), dtype=theano.config.floatX), name='w')
+b = shared(0.0, name='b')
 
 #hypothesis function is basically thus
 h = 1 / (1 + T.exp(-T.dot(x, w) - b))
@@ -79,7 +84,7 @@ for i in xrange(out_class):
 			Y_vec_train[k] = 1
 	
 	#declare the weights and bias term 
-  	w = shared(rng.randn(features), name='w')
+	w = shared(rng.randn((features)), name='w')
 	#why didn't bias term update when initialised with 'zero'
 	b = shared(rng.randn(), name='b')
 
@@ -96,12 +101,17 @@ for i in xrange(out_class):
 	x_vals = [idx for idx in range(training_steps)]
 	y_vals = cost_vec
 	plt.plot(x_vals, y_vals, 'r')
-	plt.savefig('./cost{:>05}.png')
-	#plt.show()
-	
+	plt.savefig("./cost{i}.png".format(i=i))
+	plt.show()
+	plt.cla()
+	plt.clf()
+
 	#store the weights of parameters for that particular class
 	print 'Done with training for class ', i
-   
+
+   	print 'weights for class: ', i, w.get_value()
+   	print 'bias term for class: ', i, b.get_value()
+
 	W[:, i] = w.get_value()
 	B[0, i] = b.get_value()	
 
@@ -119,24 +129,3 @@ print 'Done with training the model!'
 np.savez('./weights.npz', w=W)
 np.savez('./bias.npz', b=B)
 print 'Saved the parameters...'
-
-#print 'Entire weight set: \n'
-#print W
-#print 'Vector of biased terms for 10 classes are: \n'
-#B
-
-
-#predict the accuracy over the training set 
-predicted = predict(X_train)
-
-#predict seems not to be working...
-#this should be of dimension Nxout_class
-#this is probability distribution
-np.savez('./predicted.npz', pred=predicted)
-
-
-print 'Comparing target value and predicted value for training set:\n'
-#for tar, pre in zip(Y_train, predicted):
-#	print 'Target: ', tar, 'Predicted: ', pre
-#print predicted
-print 'Done!!'
