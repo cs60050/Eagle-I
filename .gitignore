@@ -1,3 +1,7 @@
 *.pyc
 *.npz
 *.png
+*.csv
+*.py.swp
+*.idea
+*xml
