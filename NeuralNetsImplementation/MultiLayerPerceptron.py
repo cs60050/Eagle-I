@@ -15,9 +15,6 @@ mnist = input_data.read_data_sets("/home/kv/MNIST_data/", one_hot=True)
 X_train = mnist.train.images
 Y_train = mnist.train.labels
 
-# X_train = X_train[:100, :]
-# Y_train = Y_train[:100, :]
-
 # (5000, 784)
 X_validate = mnist.validation.images
 Y_validate = mnist.validation.labels
@@ -28,11 +25,14 @@ Y_test = mnist.test.labels
 
 # details about the network
 input_layer = 784  # 28 * 28 images flattened
-hidden_layer = 256
+hidden_layer_1 = 256
+hidden_layer_2 = 256
 output_layer = 10
+
 print '\nNetwork details...'
 print 'Input size: ', input_layer
-print 'Hidden layer units: ', hidden_layer
+print 'Hidden layer 1 units: ', hidden_layer_1
+print 'Hidden layer 2 units: ', hidden_layer_2
 print 'Output layer units: ', output_layer
 
 # graph input
@@ -40,22 +40,32 @@ x = tf.placeholder(tf.float32, [None, input_layer])
 y = tf.placeholder(tf.float32, [None, output_layer])
 
 # model weights
-print '\nInitialising random weights and biases'
-w_hidden_vals = tf.random_normal([input_layer, hidden_layer])
-b_hidden_vals = tf.random_normal([hidden_layer])
-w_hidden = tf.Variable(w_hidden_vals, name='hidden_weights')
-b_hidden = tf.Variable(b_hidden_vals, name='hidden_bias')
+print '\nInitialising random weights and biases...'
+w_hidden1_vals = tf.random_normal([input_layer, hidden_layer_1])
+b_hidden1_vals = tf.random_normal([hidden_layer_1])
+w_hidden1 = tf.Variable(w_hidden1_vals, name='hidden1_weights')
+b_hidden1 = tf.Variable(b_hidden1_vals, name='hidden1_bias')
 
-w_output_vals = tf.random_normal([hidden_layer, output_layer])
+w_hidden2_vals = tf.random_normal([hidden_layer_1, hidden_layer_2])
+b_hidden2_vals = tf.random_normal([hidden_layer_2])
+w_hidden2 = tf.Variable(w_hidden2_vals, name='hidden2_weights')
+b_hidden2 = tf.Variable(b_hidden2_vals, name='hidden2_bias')
+
+
+w_output_vals = tf.random_normal([hidden_layer_2, output_layer])
 b_output_vals = tf.random_normal([output_layer])
 w_output = tf.Variable(w_output_vals, name='output_weights')
 b_output = tf.Variable(b_output_vals, name='output_bias')
 
-# model for a multi-layer-perceptron with single hidden layer
-# ReLU activation for the hidden layer
-hidden_activations = tf.nn.relu(tf.add(tf.matmul(x, w_hidden), b_hidden))
-# softmax activation for the output layer
-output_activations = tf.add(tf.matmul(hidden_activations, w_output), b_output)
+# model for a multi-layer-perceptron with two hidden layers
+# ReLU activations for the first hidden layer
+hidden1_activations = tf.nn.relu(tf.add(tf.matmul(x, w_hidden1), b_hidden1))
+
+#ReLU activations for the second hidden layer
+hidden2_activations = tf.nn.relu(tf.add(tf.matmul(hidden1_activations, w_hidden2), b_hidden2))
+
+# linear activations for the output layer
+output_activations = tf.add(tf.matmul(hidden2_activations, w_output), b_output)
 
 # using negative log-likelihood as the cost function
 # cost = tf.reduce_mean(-tf.reduce_sum(y * tf.log(output_activations), reduction_indices=1))
@@ -71,7 +81,7 @@ init_op = tf.initialize_all_variables()
 # other variables
 batch_size = 100
 cost_vec = []
-training_epochs = 25
+training_epochs = 15
 
 # launch the graph
 print '\nLaunching the graph...'
@@ -79,6 +89,9 @@ with tf.Session() as sess:
 	sess.run(init_op)
 
 	total_batches = int(mnist.train.num_examples / batch_size)
+	print 'Implementing batchwise stochastic gradient descent...'
+	print 'batch size: ', batch_size
+	print 'Total number of batches: ', total_batches
 
 	for epoch in xrange(training_epochs):
 		avg_cost = 0
@@ -121,9 +134,11 @@ with tf.Session() as sess:
 	print 'Test accuracy: ', sess.run(accuracy, feed_dict={x: X_test, y: Y_test}) * 100
 
 	print '\nSaving the parameters...'
-	np.savez('./w_hidden', w_hidden=sess.run(w_hidden))
-	np.savez('./b_hidden', b_hidden=sess.run(b_hidden))
-	np.savez('./w_output', w_output=sess.run(w_output))
-	np.savez('./b_output', b_output=sess.run(b_output))
+	np.savez('./Params/w_hidden1', w_hidden1=sess.run(w_hidden1))
+	np.savez('./Params/b_hidden1', b_hidden1=sess.run(b_hidden1))
+	np.savez('./Params/w_hidden2', w_hidden2=sess.run(w_hidden2))
+	np.savez('./Params/b_hidden2', b_hidden2=sess.run(b_hidden2))
+	np.savez('./Params/w_output', w_output=sess.run(w_output))
+	np.savez('./Params/b_output', b_output=sess.run(b_output))
 
 print '\nTotal time taken: ', time.time() - init_time
