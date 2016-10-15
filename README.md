@@ -2,7 +2,7 @@
 <h2><b> Handwritten Character Recognition</b> </h2>
 <p> This is our project based on Machine Learning where we will try to recognize handwritrn characters </p>
 
-<h4>Team Members</h4>
+<h4><b>Team Members</b></h4>
 <ul>
 <li>Aakash Yadav</li>
 <li>Dishank Bansal</li>
@@ -14,7 +14,7 @@
 <li>Yash Goyal</li>
 </ul>
 
-<h2><b>Requirements</b> </h2>
+<h4><b>Requirements</b></h4>
 <li>NumPy</li>
 <li>Theano</li>
 <li>OpenCV</li>
