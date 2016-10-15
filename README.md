@@ -15,7 +15,9 @@
 </ul>
 
 <h4><b>Requirements</b></h4>
+<ul>
 <li>NumPy</li>
 <li>Theano</li>
 <li>OpenCV</li>
 <li>Pandas</li>
+</ul>
