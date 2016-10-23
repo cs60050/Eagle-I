@@ -18,6 +18,8 @@
 <ul>
 <li>NumPy</li>
 <li>Theano</li>
-<li>OpenCV</li>
+<li>OpenCV 3.1.0</li>
 <li>Pandas</li>
+<li>TensorFlow</li>
+<li>Python3</li>
 </ul>
