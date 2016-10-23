@@ -40,23 +40,16 @@ print("#----------------------------#")
 
 grey_img = cv2.cvtColor(src_img, cv2.COLOR_BGR2GRAY)
 
-# gud_img = cv2.adaptiveThreshold(grey_img,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY_INV,1001,2)
-gud_img = cv2.adaptiveThreshold(grey_img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,1001,2)
+gud_img = cv2.adaptiveThreshold(grey_img,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY_INV,101,2)
 
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
 noise_remove = cv2.erode(gud_img,kernel,iterations = 2)
 
-
-# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
 kernel1 = np.array([[1,0,1],[0,1,0],[1,0,1]], dtype = np.uint8)
-final_thr = cv2.dilate(gud_img,kernel1,iterations = 2)
 
-
-
-# closing = cv2.morphologyEx(gud_img, cv2.MORPH_OPEN, kernel, iterations = 1) # To remove "pepper-noise"
-# final_thr = np.empty(final.shape, dtype=np.uint8)
-# cv2.bitwise_not(final1, final_thr)
-
+opening = cv2.morphologyEx(gud_img, cv2.MORPH_OPEN, kernel, iterations = 2) # To remove "pepper-noise"
+kernel1 = np.array([[1,0,1],[0,1,0],[1,0,1]], dtype = np.uint8)
+final_thr = cv2.dilate(noise_remove,kernel1,iterations = 3)
 
 #-------------/Thresholding Image-------------#
 
@@ -71,14 +64,12 @@ for y in range(height):
 	# print(count_x[y])
 
 line_list = line_array(count_x)
-print(line_list) 
+# print(line_list) 
 
 # t = np.arange(0,height, 1)
 # plt.plot(t, count_x[t])
 # plt.axis([0, height, 0, 350])
-# plt.show()
 
-# k = cv2.waitKey(0)
 
 # for y in range(len(line_list)):
 # 	if :
@@ -118,8 +109,9 @@ final_contr = np.zeros((final_thr.shape[0],final_thr.shape[1],3), dtype = np.uin
 cv2.drawContours(final_contr, contours, -1, (0,255,0), 3)
 
 for cnt in contours:
-	x,y,w,h = cv2.boundingRect(cnt)
-	cv2.rectangle(src_img,(x,y),(x+w,y+h),(0,255,0),2)
+	if cv2.contourArea(cnt) > 100:
+		x,y,w,h = cv2.boundingRect(cnt)
+		cv2.rectangle(src_img,(x,y),(x+w,y+h),(0,255,0),2)
 
 #-------------/Character segmenting-----------# 
 
@@ -136,6 +128,8 @@ cv2.namedWindow('Contour Image', cv2.WINDOW_NORMAL)
 cv2.imshow("Source Image", src_img)
 cv2.imshow("Threshold Image", final_thr)
 cv2.imshow("Contour Image", final_contr)
+
+# plt.show()
 
 #-------------/Displaying Image---------------#
 
