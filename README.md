@@ -1,6 +1,6 @@
 # Eagle-I
 <h2><b> Handwritten Character Recognition</b> </h2>
-<p> This is our project based on Machine Learning where we will try to recognize handwritrn characters </p>
+<p> This is our project based on Machine Learning where we will try to recognize handwritten characters </p>
 
 <h4><b>Team Members</b></h4>
 <ul>
@@ -18,6 +18,8 @@
 <ul>
 <li>NumPy</li>
 <li>Theano</li>
-<li>OpenCV</li>
+<li>OpenCV 3.1.0</li>
 <li>Pandas</li>
+<li>TensorFlow</li>
+<li>Python3</li>
 </ul>
