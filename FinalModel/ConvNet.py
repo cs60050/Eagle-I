@@ -8,20 +8,32 @@ init_time = time.time()
 
 #read data
 print 'Reading data...'
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("/home/kv/MNIST_data/", one_hot=True)
+# from tensorflow.examples.tutorials.mnist import input_data
+# mnist = input_data.read_data_sets("/home/kv/MNIST_data/", one_hot=True)
 
-# (55000, 784)
-X_train = mnist.train.images
-Y_train = mnist.train.labels
+# # (55000, 784)
+# X_train = mnist.train.images
+# Y_train = mnist.train.labels
 
-# (5000, 784)
-X_validate = mnist.validation.images
-Y_validate = mnist.validation.labels
+# # (5000, 784)
+# X_validate = mnist.validation.images
+# Y_validate = mnist.validation.labels
 
-# (10000, 784)
-X_test = mnist.test.images
-Y_test = mnist.test.labels
+# # (10000, 784)
+# X_test = mnist.test.images
+# Y_test = mnist.test.labels
+
+train = np.load('./train.npz')
+X_train = train['X']
+Y_train = train['Y']
+
+examples = X_train.shape[0]
+features = X_train.shape[1]
+classes =  Y_train.shape[1]
+print 'Data details...'
+print 'Total number of examples: ', examples
+print 'Total number of features: ', features
+print 'Total number of classes: ', classes
 
 #details of the network
 learning_rate = 0.01
@@ -31,7 +43,7 @@ max_pooling1 = 14
 out_channels2 = 64
 max_pooling2 = 7
 full_conn_layer = 1024
-out_classes = 10
+out_classes = 62
 
 print '\nNetwork details...'
 print 'Input size: ', input_layer
@@ -45,8 +57,8 @@ print 'Number of units in fully-connected layer: ', full_conn_layer
 print 'Output layer units: ', out_classes
 
 # graph input placeholders
-x = tf.placeholder(tf.float32, shape=[None, 784])
-y = tf.placeholder(tf.float32, shape=[None, 10])
+x = tf.placeholder(tf.float32, shape=[None, input_layer])
+y = tf.placeholder(tf.float32, shape=[None, out_classes])
 
 # model weights and biases
 # 5 x 5 filters on 1 channel input producing 32 out channels
@@ -132,7 +144,7 @@ init_op = tf.initialize_all_variables()
 
 #other details
 batch_size = 128
-training_epochs = 250
+training_epochs = 15
 display_step = 20
 
 ####################
@@ -142,7 +154,7 @@ print '\nLaunching the graph...'
 with tf.Session() as sess:
     sess.run(init_op)
 
-    total_batches = int(mnist.train.num_examples/batch_size)
+    total_batches = int(examples/batch_size)
     print 'Implementing batchwise stochastic gradient descent...'
     print 'batch size: ', batch_size
     print 'Total number of batches: ', total_batches
@@ -152,17 +164,16 @@ with tf.Session() as sess:
         avg_cost = 0
         start = time.time()
 
-        for batch in xrange(1, total_batches):
-            x_batch, y_batch = mnist.train.next_batch(batch_size)
+        for start, end in zip(range(0, examples, batch_size), range(batch_size, examples, batch_size)):
+            x_batch = X_train[start:end]
+            y_batch = Y_train[start:end]
         
             sess.run(optimizer, feed_dict={x: x_batch, y: y_batch})
         
             J = sess.run(cost, feed_dict={x: x_batch, y: y_batch})
             avg_cost += J
         
-            if batch % display_step == 0:
-                print 'Epoch: ', epoch+1, ' Batch: ', batch, \
-                      ' Batch avg cost: ', avg_cost/(batch_size * display_step)
+            print 'Epoch: ', epoch+1, ' Batch avg cost: ', J
         
         avg_cost /= total_batches
         print 'Epoch: ', epoch+1, '\tCost: ', avg_cost, '\tTime: ', time.time()-start
@@ -177,12 +188,12 @@ with tf.Session() as sess:
 
     # validating the model
     J_train = sess.run(cost, feed_dict={x: X_train, y: Y_train})
-    J_validate = sess.run(cost, feed_dict={x: X_validate, y: Y_validate})
-    J_test = sess.run(cost, feed_dict={x: X_test, y: Y_test})
+    # J_validate = sess.run(cost, feed_dict={x: X_validate, y: Y_validate})
+    # J_test = sess.run(cost, feed_dict={x: X_test, y: Y_test})
 
     print 'Final cost over training set: ', J_train
-    print 'Final cost over validation set: ', J_validate
-    print 'Final cost over test set: ', J_test
+    # print 'Final cost over validation set: ', J_validate
+    # print 'Final cost over test set: ', J_test
 
     # predict the hypothesis
     corr_pred = tf.equal(tf.argmax(y, dimension=1), tf.argmax(pred, dimension=1))
@@ -190,16 +201,11 @@ with tf.Session() as sess:
 
     print '\nPredicting accuracy...'
     print 'Training accuracy: ', sess.run(accuracy, feed_dict={x: X_train, y: Y_train}) * 100
-    print 'Validation accuracy: ', sess.run(accuracy, feed_dict={x: X_validate, y: Y_validate}) * 100
-    print 'Test accuracy: ', sess.run(accuracy, feed_dict={x: X_test, y: Y_test}) * 100
+    # print 'Validation accuracy: ', sess.run(accuracy, feed_dict={x: X_validate, y: Y_validate}) * 100
+    # print 'Test accuracy: ', sess.run(accuracy, feed_dict={x: X_test, y: Y_test}) * 100
+
+    # save the weights
+    np.savez('./weights.npz', wc1=wc1, wc2=wc2, wf1=wf1, wo=wo)
+    np.savez('./bias.npz', bc1=bc1, bc2=bc2, bf1=bf1, bo=bo)
 
 print '\nTotal time taken: ', time.time() - init_time
-
-
-
-
-
-
-
-
-
