@@ -146,6 +146,8 @@ init_op = tf.initialize_all_variables()
 batch_size = 128
 training_epochs = 15
 display_step = 20
+cost_vec_batch = []
+cost_vec_epoch = []
 
 ####################
 # launch the graph #
@@ -171,12 +173,14 @@ with tf.Session() as sess:
             sess.run(optimizer, feed_dict={x: x_batch, y: y_batch})
         
             J = sess.run(cost, feed_dict={x: x_batch, y: y_batch})
+            cost_vec_batch.append(J)
             avg_cost += J
         
-            print 'Epoch: ', epoch+1, ' Batch avg cost: ', J
+            # print 'Epoch: ', epoch, ' Batch avg cost: ', J
         
         avg_cost /= total_batches
-        print 'Epoch: ', epoch+1, '\tCost: ', avg_cost, '\tTime: ', time.time()-start
+        cost_vec_epoch.append(avg_cost)
+        print 'Epoch: ', epoch, '\tCost: ', avg_cost, '\tTime: ', time.time()-start
         # sess.run(optimizer, feed_dict={x:X_train, y:Y_train})
         # J = sess.run(cost, feed_dict={x:X_train, y:Y_train})
 
@@ -200,12 +204,13 @@ with tf.Session() as sess:
     accuracy = tf.reduce_mean(tf.cast(corr_pred, tf.float32))
 
     print '\nPredicting accuracy...'
-    print 'Training accuracy: ', sess.run(accuracy, feed_dict={x: X_train, y: Y_train}) * 100
+    print 'Training accuracy: ', sess.run(accuracy, feed_dict={x: X_train, y: Y_train}) * 100, ' %'
     # print 'Validation accuracy: ', sess.run(accuracy, feed_dict={x: X_validate, y: Y_validate}) * 100
     # print 'Test accuracy: ', sess.run(accuracy, feed_dict={x: X_test, y: Y_test}) * 100
 
-    # save the weights
-    np.savez('./weights.npz', wc1=wc1, wc2=wc2, wf1=wf1, wo=wo)
-    np.savez('./bias.npz', bc1=bc1, bc2=bc2, bf1=bf1, bo=bo)
+    # save the weights and costs
+    np.savez('./weights.npz', wc1=sess.run(wc1), wc2=sess.run(wc2), wf1=sess.run(wf1), wo=sess.run(wo))
+    np.savez('./bias.npz', bc1=sess.run(bc1), bc2=sess.run(bc2), bf1=sess.run(bf1), bo=sess.run(bo))
+    np.savez('./cost.npz', epoch_cost=cost_vec_epoch, batch_cost=cost_vec_batch)
 
 print '\nTotal time taken: ', time.time() - init_time
