@@ -191,11 +191,11 @@ with tf.Session() as sess:
     print 'Done training the model!'
 
     # validating the model
-    J_train = sess.run(cost, feed_dict={x: X_train, y: Y_train})
+    # J_train = sess.run(cost, feed_dict={x: X_train, y: Y_train})
     # J_validate = sess.run(cost, feed_dict={x: X_validate, y: Y_validate})
     # J_test = sess.run(cost, feed_dict={x: X_test, y: Y_test})
 
-    print 'Final cost over training set: ', J_train
+    # print 'Final cost over training set: ', J_train
     # print 'Final cost over validation set: ', J_validate
     # print 'Final cost over test set: ', J_test
 
@@ -204,7 +204,10 @@ with tf.Session() as sess:
     accuracy = tf.reduce_mean(tf.cast(corr_pred, tf.float32))
 
     print '\nPredicting accuracy...'
-    print 'Training accuracy: ', sess.run(accuracy, feed_dict={x: X_train, y: Y_train}) * 100, ' %'
+    acc = []
+    for idx in range(10):
+    	acc.append(sess.run(accuracy, feed_dict={x: X_train[idx*6000:(idx+1)6000], y: Y_train[idx*6000:(idx+1)6000]}))
+    print 'Training accuracy: ', (sum(acc)/10.0) * 100, ' %'
     # print 'Validation accuracy: ', sess.run(accuracy, feed_dict={x: X_validate, y: Y_validate}) * 100
     # print 'Test accuracy: ', sess.run(accuracy, feed_dict={x: X_test, y: Y_test}) * 100
 
@@ -212,5 +215,6 @@ with tf.Session() as sess:
     np.savez('./weights.npz', wc1=sess.run(wc1), wc2=sess.run(wc2), wf1=sess.run(wf1), wo=sess.run(wo))
     np.savez('./bias.npz', bc1=sess.run(bc1), bc2=sess.run(bc2), bf1=sess.run(bf1), bo=sess.run(bo))
     np.savez('./cost.npz', epoch_cost=cost_vec_epoch, batch_cost=cost_vec_batch)
+    np.savez('./accuracy.npz', acc=acc)
 
 print '\nTotal time taken: ', time.time() - init_time
